@@ -107,18 +107,15 @@ async def on_voice_state_update(member, before, after):
                     msg = f"{random.choice(GOODBYE_PART_A)}, {random.choice(GOODBYE_PART_B)}"
                     await channel.send(msg)
 
-@bot.tree.command(name="studywithme", description="Study with the bot!")
-async def studywithme(interaction: discord.Interaction):
-    print(f"Command /studywithme used by {interaction.user}")
+@bot.command(name="studywithme")
+async def studywithme(ctx):
+    print(f"Command !studywithme used by {ctx.author}")
     
-    # Defer so we have more time to connect (total 15 mins instead of 3 secs)
-    await interaction.response.defer()
-    
-    if interaction.user.voice:
-        voice_channel = interaction.user.voice.channel
+    if ctx.author.voice:
+        voice_channel = ctx.author.voice.channel
         print(f"User is in voice channel: {voice_channel.name} ({voice_channel.id})")
         
-        vc = discord.utils.get(bot.voice_clients, guild=interaction.guild)
+        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         
         gif_file = "working.gif"
         if not os.path.exists(gif_file):
@@ -138,42 +135,42 @@ async def studywithme(interaction: discord.Interaction):
                     await vc.move_to(voice_channel)
                 except Exception as e:
                     response = f"I tried to move to you, but something went wrong: {e} 😅"
-            await interaction.followup.send(response)
+            await ctx.send(response)
         else:
             print(f"Attempting to join channel: {voice_channel.name}")
             try:
                 # Check permissions first
-                permissions = voice_channel.permissions_for(interaction.guild.me)
+                permissions = voice_channel.permissions_for(ctx.guild.me)
                 if not permissions.connect or not permissions.speak:
-                    await interaction.followup.send("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
+                    await ctx.send("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
                     return
 
                 await voice_channel.connect(timeout=20, reconnect=True)
                 print("Successfully joined voice channel!")
                 response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                await interaction.followup.send(response)
+                await ctx.send(response)
             except Exception as e:
                 print(f"CRITICAL ERROR - Failed to connect: {e}")
-                await interaction.followup.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
+                await ctx.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
                 return # Stop if connection failed
     else:
         print("User is not in any voice channel.")
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
-        await interaction.followup.send(msg)
+        await ctx.send(msg)
 
     # Send GIF if it exists
     if gif_file := (locals().get('gif_file')): # Safely check if gif_file exists in scope
         if gif_file:
-            await interaction.channel.send(file=discord.File(gif_file))
+            await ctx.send(file=discord.File(gif_file))
 
-@bot.tree.command(name="ping", description="Check the bot's latency!")
-async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Pong! 🏓 Latency: {round(bot.latency * 1000)}ms")
+@bot.command(name="ping")
+async def ping(ctx):
+    await ctx.send(f"Pong! 🏓 Latency: {round(bot.latency * 1000)}ms")
 
-@bot.tree.command(name="greet", description="Get a friendly greeting!")
-async def greet(interaction: discord.Interaction):
+@bot.command(name="greet")
+async def greet(ctx):
     msg = f"{random.choice(GREETINGS_A)} {random.choice(GREETINGS_B)}"
-    await interaction.response.send_message(msg)
+    await ctx.send(msg)
 
 if __name__ == "__main__":
     if TOKEN:
