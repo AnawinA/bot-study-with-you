@@ -1,176 +1,61 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
-import os
-import random
-import asyncio
-from dotenv import load_dotenv
-from keep_alive import keep_alive
+from discord.ext import commands
 
-# Load environment variables
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-print(f"Loading IDs... Voice: {os.getenv('WORK_VOICE_CHANNEL')}, Text: {os.getenv('WORK_CHANNEL')}")
-try:
-    WORK_VOICE_CHANNEL_ID = int(os.getenv('WORK_VOICE_CHANNEL'))
-    WORK_CHANNEL_ID = int(os.getenv('WORK_CHANNEL'))
-    CATEGORY_ID = os.getenv('CATEGORY_ID') # Optional, currently unused but requested to be in .env
-except (TypeError, ValueError):
-    print("Error: WORK_VOICE_CHANNEL or WORK_CHANNEL not set correctly in .env")
-    WORK_VOICE_CHANNEL_ID = 0
-    WORK_CHANNEL_ID = 0
+TOKEN = "YOUR_BOT_TOKEN_HERE"
 
-# Bot Configuration
 intents = discord.Intents.default()
-intents.message_content = True
-intents.voice_states = True
-intents.guilds = True
-intents.members = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-class StudyBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="!", intents=intents)
-
-    async def setup_hook(self):
-        synced = await self.tree.sync()
-        print(f"Synced {len(synced)} slash commands for {self.user}")
-
-bot = StudyBot()
-
-# Message data
-GREETINGS_A = ["Oh hey!", "Hi there!", "Welcome welcome! 👋", "Work mode activated 💼😄", "Heyyy,", "Nice to see you here! 🌱", "Oh!", "Looks like a productive moment 💡", "Hi hi!", "Welcome to the work zone! 🚀"]
-GREETINGS_B = ["You came to work 😊 Want some company? Use /studywithme and I’ll join you!", "Focus time already? ✨ Type /studywithme and we can work together!", "If you’d like a study buddy, just use /studywithme!", "Use /studywithme and I’ll hop into the voice chat!", "time to get things done? 📚 Use /studywithme and I’ll join you right away!", "If you want me around, use /studywithme!", "A new worker appeared 👀✨ Run /studywithme and let’s focus together!", "Use /studywithme and I’ll keep you company!", "Ready to work? 😄 Just type /studywithme and I’ll join in!", "Use /studywithme and let’s stay focused together!"]
-
-READY_NOT_JOINED_A = ["I’m already here! 😊", "I’m here already 👋", "Yep, I’m here! �", "I’m right here 👀✨", "Already standing by! 🚀", "I’m here and ready 💼😊", "Hi hi, I’m already here 😆", "I’m here! 🌱", "Already here 👋😄", "I’m here and prepared ✨"]
-READY_NOT_JOINED_B = ["Just say the word and I’ll jump in!", "Ready whenever you are!", "Let me know if you want to start!", "Waiting for you!", "Just tell me when!", "Let’s do this!", "Shall we begin?", "Ready to focus together!", "Let’s get to work!", "Whenever you’re ready!"]
-
-READY_ALREADY_JOINED_A = ["I’m already here 😅", "I’m here already 👀", "Yep, I’m here 😄", "Still here! 😊", "I’m here with you 🎧", "I never left 😅", "I’m already in the channel 👋😄", "Here I am! ✨", "I’m here and listening 🎧😊", "Already here 😄"]
-READY_ALREADY_JOINED_B = ["Right beside you!", "Didn’t go anywhere!", "Let’s keep going!", "Ready to continue!", "Let’s stay focused!", "I’m right here!", "Let’s work!", "Still studying with you!", "Let’s do our best!", "Let’s keep the momentum!"]
-
-FOLLOW_MESSAGES_A = ["You can go first 😊", "Go ahead! 👋", "No worries 😄", "You lead the way 🚶‍♂️✨", "Go on first 😊", "Sounds good 👍😄", "You can start first 🌱", "Alright! 😊", "Go ahead 🚀", "You first �"]
-FOLLOW_MESSAGES_B = ["I’ll join you right away!", "I’ll follow you in a moment!", "I’ll join as soon as you’re there!", "I’ll join you right after!", "I’ll be there in no time!", "I’ll join you shortly!", "I’ll join you right away!", "I’ll meet you there soon!", "I’ll join once you’re ready!", "I’ll catch up immediately!"]
-
-GOODBYE_PART_A = [
-    "Thank you for inviting me", "That was a nice session", "I enjoyed studying together",
-    "That was productive", "I’m glad I could join", "Thanks for having me here",
-    "That was a good focus time", "I appreciate the time together", "It was fun working together",
-    "I’m happy I could help"
-]
-
-GOODBYE_PART_B = [
-    "see you next time!", "see you later!", "see you soon!", "catch you next time!",
-    "talk to you again soon!", "hope we study again soon!", "good luck with your work!",
-    "take care!", "have a great rest of your day!", "don't forget to rest!"
-]
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user.name}')
-    # Set the bot's activity status
-    await bot.change_presence(activity=discord.Game(name="Studying 📚"))
-    
-    # Check if Opus (Voice Support) is loaded
-    if not discord.opus.is_loaded():
-        # On Windows, discord.py tries to find it automatically. 
-        # On Linux/Render, you might need to install it.
-        print("Opus library not loaded. Voice support might be unstable.")
-    
-    print("Bot is ready and Status is set to 'Studying'")
+    print(f"Logged in as {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} commands")
+    except Exception as e:
+        print(e)
 
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if member.bot:
+
+@bot.tree.command(name="join", description="Join your voice channel")
+async def join(interaction: discord.Interaction):
+    # User not in voice channel
+    if not interaction.user.voice:
+        await interaction.response.send_message(
+            "❌ You must be in a voice channel first!",
+            ephemeral=True
+        )
         return
 
-    # Someone joined a voice channel
-    if after.channel:
-        # Check if they joined the SPECIFIC work channel for the greeting
-        if after.channel.id == WORK_VOICE_CHANNEL_ID and (before.channel is None or before.channel.id != WORK_VOICE_CHANNEL_ID):
-            members = [m for m in after.channel.members if not m.bot]
-            if len(members) == 1:
-                channel = bot.get_channel(WORK_CHANNEL_ID)
-                if channel:
-                    msg = f"{random.choice(GREETINGS_A)} {random.choice(GREETINGS_B)}"
-                    await channel.send(msg)
+    channel = interaction.user.voice.channel
 
-    # Someone left a voice channel
-    if before.channel:
-        remaining_members = [m for m in before.channel.members if not m.bot]
-        if len(remaining_members) == 0:
-            vc = discord.utils.get(bot.voice_clients, guild=member.guild)
-            # Check if bot is in the channel that just became empty
-            if vc and vc.channel.id == before.channel.id:
-                print(f"Leaving empty channel: {before.channel.name}")
-                await vc.disconnect()
-                channel = bot.get_channel(WORK_CHANNEL_ID)
-                if channel:
-                    msg = f"{random.choice(GOODBYE_PART_A)}, {random.choice(GOODBYE_PART_B)}"
-                    await channel.send(msg)
-
-@bot.command(name="studywithme")
-async def studywithme(ctx):
-    print(f"Command !studywithme used by {ctx.author}")
-    
-    if ctx.author.voice:
-        voice_channel = ctx.author.voice.channel
-        print(f"User is in voice channel: {voice_channel.name} ({voice_channel.id})")
-        
-        vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
-        
-        gif_file = "working.gif"
-        if not os.path.exists(gif_file):
-            if os.path.exists("reading.gif"):
-                gif_file = "reading.gif"
-            else:
-                gif_file = None
-
-        if vc and vc.is_connected():
-            if vc.channel.id == voice_channel.id:
-                print("Bot already in the same channel.")
-                response = f"{random.choice(READY_ALREADY_JOINED_A)} {random.choice(READY_ALREADY_JOINED_B)}"
-            else:
-                print(f"Moving from {vc.channel.name} to {voice_channel.name}")
-                response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                try:
-                    await vc.move_to(voice_channel)
-                except Exception as e:
-                    response = f"I tried to move to you, but something went wrong: {e} 😅"
-            await ctx.send(response)
-        else:
-            print(f"Attempting to join channel: {voice_channel.name}")
-            try:
-                # Check permissions first
-                permissions = voice_channel.permissions_for(ctx.guild.me)
-                if not permissions.connect or not permissions.speak:
-                    await ctx.send("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
-                    return
-
-                await voice_channel.connect(timeout=20, reconnect=True)
-                print("Successfully joined voice channel!")
-                response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                await ctx.send(response)
-            except Exception as e:
-                print(f"CRITICAL ERROR - Failed to connect: {e}")
-                await ctx.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
-                return # Stop if connection failed
+    # Already connected
+    if interaction.guild.voice_client:
+        await interaction.guild.voice_client.move_to(channel)
+        await interaction.response.send_message(
+            f"🔁 Moved to **{channel.name}**"
+        )
     else:
-        print("User is not in any voice channel.")
-        msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
-        await ctx.send(msg)
+        await channel.connect()
+        await interaction.response.send_message(
+            f"🔊 Joined **{channel.name}**"
+        )
 
-    # Send GIF if it exists
-    if gif_file := (locals().get('gif_file')): # Safely check if gif_file exists in scope
-        if gif_file:
-            await ctx.send(file=discord.File(gif_file))
 
-@bot.command(name="ping")
-async def ping(ctx):
-    await ctx.send(f"Pong! 🏓 Latency: {round(bot.latency * 1000)}ms")
+@bot.tree.command(name="leave", description="Leave the voice channel")
+async def leave(interaction: discord.Interaction):
+    voice_client = interaction.guild.voice_client
 
-@bot.command(name="greet")
-async def greet(ctx):
-    msg = f"{random.choice(GREETINGS_A)} {random.choice(GREETINGS_B)}"
-    await ctx.send(msg)
+    if not voice_client:
+        await interaction.response.send_message(
+            "❌ I'm not in a voice channel.",
+            ephemeral=True
+        )
+        return
+
+    await voice_client.disconnect()
+    await interaction.response.send_message("👋 Left the voice channel")
 
 if __name__ == "__main__":
     if TOKEN:
