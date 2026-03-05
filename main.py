@@ -66,6 +66,9 @@ GOODBYE_PART_B = [
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
+    # Set the bot's activity status
+    await bot.change_presence(activity=discord.Game(name="Studying 📚"))
+    print("Status set to 'Studying'")
 
 @bot.event
 async def on_voice_state_update(member, before, after):
