@@ -1,36 +1,41 @@
+import os
 import discord
 from discord.ext import commands
-from discord import app_commands
-import os
 
-TOKEN = os.getenv('DISCORD_TOKEN')
-class MyBot(commands.Bot):
-    def __init__(self):
-        intents = discord.Intents.default()
-        super().__init__(command_prefix="!", intents=intents)
+TOKEN = os.environ["Token"]
 
-    async def setup_hook(self):
-        # Syncs slash commands with Discord
-        await self.tree.sync()
-        print(f"Synced slash commands for {self.user}")
+intents = discord.Intents.default()
+intents.message_content = True
+intents.voice_states = True
 
-bot = MyBot()
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-@bot.tree.command(name="join", description="Joins your current voice channel")
-async def join(interaction: discord.Interaction):
-    if interaction.user.voice:
-        channel = interaction.user.voice.channel
-        await channel.connect()
-        await interaction.response.send_message(f"Joined **{channel.name}**!")
-    else:
-        await interaction.response.send_message("You need to be in a voice channel first!", ephemeral=True)
+@bot.event
+async def on_ready():
+    print(f"{bot.user} Activated")
 
-@bot.tree.command(name="leave", description="Leaves the voice channel")
-async def leave(interaction: discord.Interaction):
-    if interaction.guild.voice_client:
-        await interaction.guild.voice_client.disconnect()
-        await interaction.response.send_message("I've left the voice channel.")
-    else:
-        await interaction.response.send_message("I'm not in a voice channel!", ephemeral=True)
+@bot.command()
+async def join(ctx):
+    if not ctx.author.voice:
+        await ctx.send("You need to join a voice channel first 😅")
+        return
+
+    channel = ctx.author.voice.channel
+
+    if ctx.voice_client:
+        await ctx.send("I'm already here!")
+        return
+
+    await channel.connect()
+    await ctx.send("Joined the voice channel 🎧")
+
+@bot.command()
+async def leave(ctx):
+    if not ctx.voice_client:
+        await ctx.send("I'm not in a voice channel 🤔")
+        return
+
+    await ctx.voice_client.disconnect()
+    await ctx.send("Left the voice channel 👋")
 
 bot.run(TOKEN)
