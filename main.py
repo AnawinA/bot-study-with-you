@@ -10,6 +10,7 @@ from keep_alive import keep_alive
 # Load environment variables
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+print(f"Loading IDs... Voice: {os.getenv('WORK_VOICE_CHANNEL')}, Text: {os.getenv('WORK_CHANNEL')}")
 try:
     WORK_VOICE_CHANNEL_ID = int(os.getenv('WORK_VOICE_CHANNEL'))
     WORK_CHANNEL_ID = int(os.getenv('WORK_CHANNEL'))
@@ -24,6 +25,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.voice_states = True
 intents.guilds = True
+intents.members = True
 
 class StudyBot(commands.Bot):
     def __init__(self):
@@ -94,35 +96,47 @@ async def on_voice_state_update(member, before, after):
 
 @bot.tree.command(name="studywithme", description="Study with the bot!")
 async def studywithme(interaction: discord.Interaction):
-    if interaction.user.voice and interaction.user.voice.channel.id == WORK_VOICE_CHANNEL_ID:
-        voice_channel = interaction.user.voice.channel
-        vc = discord.utils.get(bot.voice_clients, guild=interaction.guild)
-        
-        gif_file = "working.gif"
-        if not os.path.exists(gif_file):
-            if os.path.exists("reading.gif"):
-                gif_file = "reading.gif"
-            else:
-                gif_file = None
-
-        if vc and vc.is_connected():
-            response = f"{random.choice(READY_ALREADY_JOINED_A)} {random.choice(READY_ALREADY_JOINED_B)}"
-            await interaction.response.send_message(response)
-        else:
-            response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-            await interaction.response.send_message(response)
-            try:
-                await voice_channel.connect()
-            except Exception as e:
-                print(f"Failed to connect: {e}")
-
-        # Send GIF if it exists
-        if gif_file:
-            await interaction.channel.send(file=discord.File(gif_file))
+    print(f"Command /studywithme used by {interaction.user}")
+    
+    if interaction.user.voice:
+        print(f"User is in voice channel: {interaction.user.voice.channel.id}")
+        if interaction.user.voice.channel.id == WORK_VOICE_CHANNEL_ID:
+            voice_channel = interaction.user.voice.channel
+            vc = discord.utils.get(bot.voice_clients, guild=interaction.guild)
             
+            gif_file = "working.gif"
+            if not os.path.exists(gif_file):
+                if os.path.exists("reading.gif"):
+                    gif_file = "reading.gif"
+                else:
+                    gif_file = None
+
+            if vc and vc.is_connected():
+                print("Bot already connected to a voice channel.")
+                response = f"{random.choice(READY_ALREADY_JOINED_A)} {random.choice(READY_ALREADY_JOINED_B)}"
+                await interaction.response.send_message(response)
+            else:
+                print(f"Attempting to join channel: {voice_channel.name}")
+                response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
+                await interaction.response.send_message(response)
+                try:
+                    await voice_channel.connect()
+                    print("Successfully joined voice channel!")
+                except Exception as e:
+                    print(f"CRITICAL ERROR - Failed to connect: {e}")
+        else:
+            print(f"User is in WRONG channel. Found: {interaction.user.voice.channel.id}, Expected: {WORK_VOICE_CHANNEL_ID}")
+            msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
+            await interaction.response.send_message(msg)
     else:
+        print("User is not in any voice channel.")
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
         await interaction.response.send_message(msg)
+
+    # Send GIF if it exists
+    if gif_file := (locals().get('gif_file')): # Safely check if gif_file exists in scope
+        if gif_file:
+            await interaction.channel.send(file=discord.File(gif_file))
 
 @bot.tree.command(name="ping", description="Check the bot's latency!")
 async def ping(interaction: discord.Interaction):
