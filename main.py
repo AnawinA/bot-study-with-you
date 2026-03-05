@@ -68,7 +68,14 @@ async def on_ready():
     print(f'Logged in as {bot.user.name}')
     # Set the bot's activity status
     await bot.change_presence(activity=discord.Game(name="Studying 📚"))
-    print("Status set to 'Studying'")
+    
+    # Check if Opus (Voice Support) is loaded
+    if not discord.opus.is_loaded():
+        # On Windows, discord.py tries to find it automatically. 
+        # On Linux/Render, you might need to install it.
+        print("Opus library not loaded. Voice support might be unstable.")
+    
+    print("Bot is ready and Status is set to 'Studying'")
 
 @bot.event
 async def on_voice_state_update(member, before, after):
@@ -124,17 +131,28 @@ async def studywithme(interaction: discord.Interaction):
             else:
                 print(f"Moving from {vc.channel.name} to {voice_channel.name}")
                 response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                await vc.move_to(voice_channel)
+                try:
+                    await vc.move_to(voice_channel)
+                except Exception as e:
+                    response = f"I tried to move to you, but something went wrong: {e} 😅"
             await interaction.response.send_message(response)
         else:
             print(f"Attempting to join channel: {voice_channel.name}")
-            response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-            await interaction.response.send_message(response)
             try:
-                await voice_channel.connect()
+                # Check permissions first
+                permissions = voice_channel.permissions_for(interaction.guild.me)
+                if not permissions.connect or not permissions.speak:
+                    await interaction.response.send_message("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
+                    return
+
+                await voice_channel.connect(timeout=20, reconnect=True)
                 print("Successfully joined voice channel!")
+                response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
+                await interaction.response.send_message(response)
             except Exception as e:
                 print(f"CRITICAL ERROR - Failed to connect: {e}")
+                await interaction.response.send_message(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
+                return # Stop if connection failed
     else:
         print("User is not in any voice channel.")
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
