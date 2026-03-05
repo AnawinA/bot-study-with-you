@@ -1,7 +1,22 @@
 import os
 import discord
 from discord.ext import commands
-from keep_alive import keep_alive
+from flask import Flask
+from threading import Thread
+
+# Flask server to keep the bot alive
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I am alive!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 TOKEN = os.environ["Token"]
 
@@ -39,5 +54,6 @@ async def leave(ctx):
     await ctx.voice_client.disconnect()
     await ctx.send("Left the voice channel 👋")
 
-keep_alive()
-bot.run(TOKEN)
+if __name__ == "__main__":
+    keep_alive()
+    bot.run(TOKEN)
