@@ -3,7 +3,6 @@ import random
 import asyncio
 import discord
 from discord.ext import commands
-from discord import app_commands
 from flask import Flask
 from threading import Thread
 
@@ -34,9 +33,20 @@ except (TypeError, ValueError):
 
 # Message data
 GREETINGS_A = ["Oh hey!", "Hi there!", "Welcome welcome! 👋", "Work mode activated 💼😄", "Heyyy,", "Nice to see you here! 🌱", "Oh!", "Looks like a productive moment 💡", "Hi hi!", "Welcome to the work zone! 🚀"]
-GREETINGS_B = ["You came to work 😊 Want some company? Use /studywithme and I’ll join you!", "Focus time already? ✨ Type /studywithme and we can work together!", "If you’d like a study buddy, just use /studywithme!", "Use /studywithme and I’ll hop into the voice chat!", "time to get things done? 📚 Use /studywithme and I’ll join you right away!", "If you want me around, use /studywithme!", "A new worker appeared 👀✨ Run /studywithme and let’s focus together!", "Use /studywithme and I’ll keep you company!", "Ready to work? 😄 Just type /studywithme and I’ll join in!", "Use /studywithme and let’s stay focused together!"]
+GREETINGS_B = [
+    "You came to work 😊 Want some company? Use !studywithme and I’ll join you!",
+    "Focus time already? ✨ Type !studywithme and we can work together!",
+    "If you’d like a study buddy, just use !studywithme!",
+    "Use !studywithme and I’ll hop into the voice chat!",
+    "time to get things done? 📚 Use !studywithme and I’ll join you right away!",
+    "If you want me around, use !studywithme!",
+    "A new worker appeared 👀✨ Run !studywithme and let’s focus together!",
+    "Use !studywithme and I’ll keep you company!",
+    "Ready to work? 😄 Just type !studywithme and I’ll join in!",
+    "Use !studywithme and let’s stay focused together!"
+]
 
-READY_NOT_JOINED_A = ["I’m already here! 😊", "I’m here already 👋", "Yep, I’m here!  ", "I’m right here 👀✨", "Already standing by! 🚀", "I’m here and ready 💼😊", "Hi hi, I’m already here 160", "I’m here! 🌱", "Already here 👋😄", "I’m here and prepared ✨"]
+READY_NOT_JOINED_A = ["I’m already here! 😊", "I’m here already 👋", "Yep, I’m here!  ", "I’m right here 👀✨", "Already standing by! 🚀", "I’m here and ready 💼😊", "Hi hi, I’m already here!", "I’m here! 🌱", "Already here 👋😄", "I’m here and prepared ✨"]
 READY_NOT_JOINED_B = ["Just say the word and I’ll jump in!", "Ready whenever you are!", "Let me know if you want to start!", "Waiting for you!", "Just tell me when!", "Let’s do this!", "Shall we begin?", "Ready to focus together!", "Let’s get to work!", "Whenever you’re ready!"]
 
 READY_ALREADY_JOINED_A = ["I’m already here 😅", "I’m here already 👀", "Yep, I’m here 😄", "Still here! 😊", "I’m here with you 🎧", "I never left 😅", "I’m already in the channel 👋😄", "Here I am! ✨", "I’m here and listening 🎧😊", "Already here 😄"]
@@ -65,19 +75,7 @@ intents.voice_states = True
 intents.guilds = True
 intents.members = True
 
-class StudyBot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="!", intents=intents)
-
-    async def setup_hook(self):
-        # Sync slash commands
-        try:
-            synced = await self.tree.sync()
-            print(f"Synced {len(synced)} slash commands for {self.user}")
-        except Exception as e:
-            print(f"Failed to sync slash commands: {e}")
-
-bot = StudyBot()
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
@@ -145,7 +143,7 @@ async def studywithme(ctx):
                     await ctx.send("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
                     return
 
-                await voice_channel.connect(timeout=20, reconnect=True)
+                await voice_channel.connect(timeout=20, reconnect=True, self_deaf=True, self_mute=True)
                 response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
                 await ctx.send(response)
             except Exception as e:
@@ -154,6 +152,9 @@ async def studywithme(ctx):
     else:
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
         await ctx.send(msg)
+
+    # Ensure status is set to Studying
+    await bot.change_presence(activity=discord.Game(name="Studying 📚"))
 
     if gif_file:
         await ctx.send(file=discord.File(gif_file))
@@ -184,3 +185,4 @@ async def leave(ctx):
 if __name__ == "__main__":
     keep_alive()
     bot.run(TOKEN)
+
