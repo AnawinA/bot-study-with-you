@@ -124,6 +124,15 @@ async def studywithme(interaction: discord.Interaction):
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
         await interaction.response.send_message(msg)
 
+@bot.tree.command(name="ping", description="Check the bot's latency!")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Pong! 🏓 Latency: {round(bot.latency * 1000)}ms")
+
+@bot.tree.command(name="greet", description="Get a friendly greeting!")
+async def greet(interaction: discord.Interaction):
+    msg = f"{random.choice(GREETINGS_A)} {random.choice(GREETINGS_B)}"
+    await interaction.response.send_message(msg)
+
 if __name__ == "__main__":
     if TOKEN:
         keep_alive()
