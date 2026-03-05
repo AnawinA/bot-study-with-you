@@ -1,6 +1,7 @@
 import os
 import discord
 from discord.ext import commands
+from keep_alive import keep_alive
 
 TOKEN = os.environ["Token"]
 
@@ -38,4 +39,5 @@ async def leave(ctx):
     await ctx.voice_client.disconnect()
     await ctx.send("Left the voice channel 👋")
 
+keep_alive()
 bot.run(TOKEN)
