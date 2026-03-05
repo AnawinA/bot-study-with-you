@@ -34,16 +34,16 @@ except (TypeError, ValueError):
 # Message data
 GREETINGS_A = ["Oh hey!", "Hi there!", "Welcome welcome! 👋", "Work mode activated 💼😄", "Heyyy,", "Nice to see you here! 🌱", "Oh!", "Looks like a productive moment 💡", "Hi hi!", "Welcome to the work zone! 🚀"]
 GREETINGS_B = [
-    "You came to work 😊 Want some company? Use !studywithme and I’ll join you!",
-    "Focus time already? ✨ Type !studywithme and we can work together!",
-    "If you’d like a study buddy, just use !studywithme!",
-    "Use !studywithme and I’ll hop into the voice chat!",
-    "time to get things done? 📚 Use !studywithme and I’ll join you right away!",
-    "If you want me around, use !studywithme!",
-    "A new worker appeared 👀✨ Run !studywithme and let’s focus together!",
-    "Use !studywithme and I’ll keep you company!",
-    "Ready to work? 😄 Just type !studywithme and I’ll join in!",
-    "Use !studywithme and let’s stay focused together!"
+    "You came to work 😊 Want some company? Use hito studywithme and I’ll join you!",
+    "Focus time already? ✨ Type hito studywithme and we can work together!",
+    "If you’d like a study buddy, just use hito studywithme!",
+    "Use hito studywithme and I’ll hop into the voice chat!",
+    "time to get things done? 📚 Use hito studywithme and I’ll join you right away!",
+    "If you want me around, use hito studywithme!",
+    "A new worker appeared 👀✨ Run hito studywithme and let’s focus together!",
+    "Use hito studywithme and I’ll keep you company!",
+    "Ready to work? 😄 Just type hito studywithme and I’ll join in!",
+    "Use hito studywithme and let’s stay focused together!"
 ]
 
 READY_NOT_JOINED_A = ["I’m already here! 😊", "I’m here already 👋", "Yep, I’m here!  ", "I’m right here 👀✨", "Already standing by! 🚀", "I’m here and ready 💼😊", "Hi hi, I’m already here!", "I’m here! 🌱", "Already here 👋😄", "I’m here and prepared ✨"]
@@ -75,7 +75,21 @@ intents.voice_states = True
 intents.guilds = True
 intents.members = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+# Prefix is 'hito ' (case insensitive)
+bot = commands.Bot(command_prefix=["hito ", "Hito "], intents=intents, case_insensitive=True)
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+        
+    # If the message is just 'hito' (case insensitive), send a greeting
+    if message.content.lower().strip() == "hito":
+        msg = f"{random.choice(GREETINGS_A)} {random.choice(GREETINGS_B)}"
+        await message.channel.send(msg)
+        return
+        
+    await bot.process_commands(message)
 
 @bot.event
 async def on_ready():
@@ -117,7 +131,7 @@ async def on_voice_state_update(member, before, after):
 
 @bot.command(name="studywithme")
 async def studywithme(ctx):
-    print(f"Command !studywithme used by {ctx.author}")
+    print(f"Command hito studywithme used by {ctx.author}")
     
     if ctx.author.voice:
         voice_channel = ctx.author.voice.channel
@@ -185,4 +199,5 @@ async def leave(ctx):
 if __name__ == "__main__":
     keep_alive()
     bot.run(TOKEN)
+
 
