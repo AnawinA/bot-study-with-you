@@ -6,10 +6,6 @@ from discord.ext import commands
 from discord import app_commands
 from flask import Flask
 from threading import Thread
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Flask server to keep the bot alive
 app = Flask('')
