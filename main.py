@@ -32,8 +32,8 @@ class StudyBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
-        await self.tree.sync()
-        print(f"Synced slash commands for {self.user}")
+        synced = await self.tree.sync()
+        print(f"Synced {len(synced)} slash commands for {self.user}")
 
 bot = StudyBot()
 
@@ -72,9 +72,10 @@ async def on_voice_state_update(member, before, after):
     if member.bot:
         return
 
-    # Someone joined the WORK_VOICE_CHANNEL
-    if after.channel and after.channel.id == WORK_VOICE_CHANNEL_ID:
-        if before.channel is None or before.channel.id != WORK_VOICE_CHANNEL_ID:
+    # Someone joined a voice channel
+    if after.channel:
+        # Check if they joined the SPECIFIC work channel for the greeting
+        if after.channel.id == WORK_VOICE_CHANNEL_ID and (before.channel is None or before.channel.id != WORK_VOICE_CHANNEL_ID):
             members = [m for m in after.channel.members if not m.bot]
             if len(members) == 1:
                 channel = bot.get_channel(WORK_CHANNEL_ID)
@@ -83,11 +84,13 @@ async def on_voice_state_update(member, before, after):
                     await channel.send(msg)
 
     # Someone left a voice channel
-    if before.channel and before.channel.id == WORK_VOICE_CHANNEL_ID:
+    if before.channel:
         remaining_members = [m for m in before.channel.members if not m.bot]
         if len(remaining_members) == 0:
             vc = discord.utils.get(bot.voice_clients, guild=member.guild)
-            if vc and vc.channel.id == WORK_VOICE_CHANNEL_ID:
+            # Check if bot is in the channel that just became empty
+            if vc and vc.channel.id == before.channel.id:
+                print(f"Leaving empty channel: {before.channel.name}")
                 await vc.disconnect()
                 channel = bot.get_channel(WORK_CHANNEL_ID)
                 if channel:
@@ -99,35 +102,36 @@ async def studywithme(interaction: discord.Interaction):
     print(f"Command /studywithme used by {interaction.user}")
     
     if interaction.user.voice:
-        print(f"User is in voice channel: {interaction.user.voice.channel.id}")
-        if interaction.user.voice.channel.id == WORK_VOICE_CHANNEL_ID:
-            voice_channel = interaction.user.voice.channel
-            vc = discord.utils.get(bot.voice_clients, guild=interaction.guild)
-            
-            gif_file = "working.gif"
-            if not os.path.exists(gif_file):
-                if os.path.exists("reading.gif"):
-                    gif_file = "reading.gif"
-                else:
-                    gif_file = None
-
-            if vc and vc.is_connected():
-                print("Bot already connected to a voice channel.")
-                response = f"{random.choice(READY_ALREADY_JOINED_A)} {random.choice(READY_ALREADY_JOINED_B)}"
-                await interaction.response.send_message(response)
+        voice_channel = interaction.user.voice.channel
+        print(f"User is in voice channel: {voice_channel.name} ({voice_channel.id})")
+        
+        vc = discord.utils.get(bot.voice_clients, guild=interaction.guild)
+        
+        gif_file = "working.gif"
+        if not os.path.exists(gif_file):
+            if os.path.exists("reading.gif"):
+                gif_file = "reading.gif"
             else:
-                print(f"Attempting to join channel: {voice_channel.name}")
+                gif_file = None
+
+        if vc and vc.is_connected():
+            if vc.channel.id == voice_channel.id:
+                print("Bot already in the same channel.")
+                response = f"{random.choice(READY_ALREADY_JOINED_A)} {random.choice(READY_ALREADY_JOINED_B)}"
+            else:
+                print(f"Moving from {vc.channel.name} to {voice_channel.name}")
                 response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                await interaction.response.send_message(response)
-                try:
-                    await voice_channel.connect()
-                    print("Successfully joined voice channel!")
-                except Exception as e:
-                    print(f"CRITICAL ERROR - Failed to connect: {e}")
+                await vc.move_to(voice_channel)
+            await interaction.response.send_message(response)
         else:
-            print(f"User is in WRONG channel. Found: {interaction.user.voice.channel.id}, Expected: {WORK_VOICE_CHANNEL_ID}")
-            msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
-            await interaction.response.send_message(msg)
+            print(f"Attempting to join channel: {voice_channel.name}")
+            response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
+            await interaction.response.send_message(response)
+            try:
+                await voice_channel.connect()
+                print("Successfully joined voice channel!")
+            except Exception as e:
+                print(f"CRITICAL ERROR - Failed to connect: {e}")
     else:
         print("User is not in any voice channel.")
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
