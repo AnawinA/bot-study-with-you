@@ -100,8 +100,8 @@ async def studywithme(interaction: discord.Interaction):
         
         gif_file = "working.gif"
         if not os.path.exists(gif_file):
-            if os.path.exists("working_placeholder.png"):
-                gif_file = "working_placeholder.png"
+            if os.path.exists("reading.gif"):
+                gif_file = "reading.gif"
             else:
                 gif_file = None
 
