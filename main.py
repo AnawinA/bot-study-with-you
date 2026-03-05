@@ -111,6 +111,9 @@ async def on_voice_state_update(member, before, after):
 async def studywithme(interaction: discord.Interaction):
     print(f"Command /studywithme used by {interaction.user}")
     
+    # Defer so we have more time to connect (total 15 mins instead of 3 secs)
+    await interaction.response.defer()
+    
     if interaction.user.voice:
         voice_channel = interaction.user.voice.channel
         print(f"User is in voice channel: {voice_channel.name} ({voice_channel.id})")
@@ -135,28 +138,28 @@ async def studywithme(interaction: discord.Interaction):
                     await vc.move_to(voice_channel)
                 except Exception as e:
                     response = f"I tried to move to you, but something went wrong: {e} 😅"
-            await interaction.response.send_message(response)
+            await interaction.followup.send(response)
         else:
             print(f"Attempting to join channel: {voice_channel.name}")
             try:
                 # Check permissions first
                 permissions = voice_channel.permissions_for(interaction.guild.me)
                 if not permissions.connect or not permissions.speak:
-                    await interaction.response.send_message("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
+                    await interaction.followup.send("Oh! I don't have permission to join or speak in that channel. Could you check my roles? 🥺")
                     return
 
                 await voice_channel.connect(timeout=20, reconnect=True)
                 print("Successfully joined voice channel!")
                 response = f"{random.choice(READY_NOT_JOINED_A)} {random.choice(READY_NOT_JOINED_B)}"
-                await interaction.response.send_message(response)
+                await interaction.followup.send(response)
             except Exception as e:
                 print(f"CRITICAL ERROR - Failed to connect: {e}")
-                await interaction.response.send_message(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
+                await interaction.followup.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' installed! 😅")
                 return # Stop if connection failed
     else:
         print("User is not in any voice channel.")
         msg = f"{random.choice(FOLLOW_MESSAGES_A)} {random.choice(FOLLOW_MESSAGES_B)}"
-        await interaction.response.send_message(msg)
+        await interaction.followup.send(msg)
 
     # Send GIF if it exists
     if gif_file := (locals().get('gif_file')): # Safely check if gif_file exists in scope
