@@ -144,9 +144,6 @@ async def on_message(message):
         msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
         msg += f"\n{ASK_TO_JOIN_HIDDEN}"
         await message.channel.send(msg)
-        gif = get_random_gif()
-        if gif:
-            await message.channel.send(file=discord.File(gif))
         return
         
     await bot.process_commands(message)
@@ -176,9 +173,6 @@ async def on_voice_state_update(member, before, after):
                     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
                     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
                     await channel.send(msg)
-                    gif = get_random_gif()
-                    if gif:
-                        await channel.send(file=discord.File(gif))
 
     # Someone left a voice channel
     if before.channel:
@@ -232,6 +226,7 @@ async def studywithme(ctx):
     else:
         msg = get_random_message(FOLLOW_MESSAGES_A_OPTIONAL, FOLLOW_MESSAGES_B, use_msg_space=False, opt_a=True)
         await ctx.send(msg)
+        return # Don't send GIF if not joining VC
 
     # Ensure status is set to Studying
     await bot.change_presence(activity=discord.Game(name="Studying 📚"))
@@ -248,9 +243,6 @@ async def greet(ctx):
     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
     await ctx.send(msg)
-    gif = get_random_gif()
-    if gif:
-        await ctx.send(file=discord.File(gif))
 
 @bot.command()
 async def join(ctx):
