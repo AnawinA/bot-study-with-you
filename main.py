@@ -172,7 +172,7 @@ async def on_voice_state_update(member, before, after):
                 if channel:
                     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
                     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
-                    await channel.send(msg)
+                    await channel.send(msg, delete_after=10)
 
     # Someone left a voice channel
     if before.channel:
