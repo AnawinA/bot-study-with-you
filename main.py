@@ -56,7 +56,7 @@ ASK_TO_JOIN = [
 ]
 
 # hidden messages (Only first person can see this) after ask to join
-ASK_TO_JOIN_HIDDEN = "-# • `hito join` to join your voice channel 😊\n-# • `hito whatru` to ask me what am I doing?\n-# • Start Pomodoro at <#1478989487332655245>"
+ASK_TO_JOIN_HIDDEN = "-# ||`hito join` & I will join 👌 (`hito whatru` / Start Pomodoro at <#1478989487332655245>)||"
 
 # old = READY_NOT_JOINED_A
 JOINED_A_OPTIONAL = ["I’m already here", "I’m here already", "Yep, I’m here", "I’m right here ✨", "Already standing by", "I’m here and ready", "Hi hi, I’m already here", "I’m here", "Already here", "I’m here and prepared ✨"]
@@ -64,7 +64,7 @@ JOINED_A_OPTIONAL = ["I’m already here", "I’m here already", "Yep, I’m her
 JOINED_B = ["Let's go!", "Let's start!", "Let's focus!", "Let's work!", "Let's study!", "Let's do this!", "Let's begin!", "Let's get to work!", "Let's keep going!", "Let's stay focused!", "Time to focus!", "Ready to get some work done!", "Focus mode: ON!", "Ready to start!", "Time to get productive!", "Ready for a productive session!"]
 
 # hidden messages  (Only someone make hito join can see this) after joined
-JOINED_HIDDEN = "-# • `hito leave` to leave the voice channel\n-# • /timer = Check Pomodoro or at <#1478989487332655245>\n-# • /now <tag> = set whate are you doing, /clear"
+JOINED_HIDDEN = "-# ||`hito leave` & I'll leave 👌 (/timer, /now <tag>, /clear)||"
 
 READY_ALREADY_JOINED_A = ["I’m already here", "I’m here already", "Yep, I’m here", "Still here", "I’m here with you", "I never left", "I’m already in the channel", "Here I am", "I’m here and listening", "Already here"]
 READY_ALREADY_JOINED_B_OPTIONAL = ["Right beside you!", "Didn’t go anywhere!", "Let’s keep going!", "Ready to continue!", "Let’s stay focused!", "I’m right here!", "Let’s work!", "Still studying with you!", "Let’s do our best!", "Let’s keep the momentum!"]
@@ -138,11 +138,8 @@ async def on_message(message):
     # If the message is just 'hito' (case insensitive), send a greeting
     if message.content.lower().strip() == "hito":
         msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
+        msg += f"\n{ASK_TO_JOIN_HIDDEN}"
         await message.channel.send(msg)
-        try:
-            await message.author.send(ASK_TO_JOIN_HIDDEN)
-        except discord.Forbidden:
-            pass # Ignore if the user has DMs disabled
         return
         
     await bot.process_commands(message)
@@ -170,11 +167,8 @@ async def on_voice_state_update(member, before, after):
                 channel = bot.get_channel(WORK_CHANNEL_ID)
                 if channel:
                     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
+                    msg += f"\n{ASK_TO_JOIN_HIDDEN}"
                     await channel.send(msg)
-                    try:
-                        await member.send(ASK_TO_JOIN_HIDDEN)
-                    except discord.Forbidden:
-                        pass
 
     # Someone left a voice channel
     if before.channel:
@@ -208,11 +202,8 @@ async def studywithme(ctx):
                     await vc.move_to(voice_channel)
                 except Exception as e:
                     response = f"I tried to move to you, but something went wrong: {e} 😅"
+            response += f"\n{JOINED_HIDDEN}"
             await ctx.send(response)
-            try:
-                await ctx.author.send(JOINED_HIDDEN)
-            except discord.Forbidden:
-                pass
         else:
             try:
                 # Check permissions
@@ -223,11 +214,8 @@ async def studywithme(ctx):
 
                 await voice_channel.connect(timeout=20, reconnect=True, self_deaf=True, self_mute=True)
                 response = get_random_message(JOINED_A_OPTIONAL, JOINED_B, use_msg_space=False, opt_a=True)
+                response += f"\n{JOINED_HIDDEN}"
                 await ctx.send(response)
-                try:
-                    await ctx.author.send(JOINED_HIDDEN)
-                except discord.Forbidden:
-                    pass
             except Exception as e:
                 await ctx.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' and 'davey' installed! 😅")
                 return
@@ -248,11 +236,8 @@ async def ping(ctx):
 @bot.command(name="greet")
 async def greet(ctx):
     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
+    msg += f"\n{ASK_TO_JOIN_HIDDEN}"
     await ctx.send(msg)
-    try:
-        await ctx.author.send(ASK_TO_JOIN_HIDDEN)
-    except discord.Forbidden:
-        pass
 
 @bot.command()
 async def join(ctx):
