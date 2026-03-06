@@ -34,14 +34,14 @@ except (TypeError, ValueError):
 
 
 # Message data
-GREETINGS = ["", "", "Hello", "Oh heyy", "Hi there", "Welcome", "Work mode activated", "Heyyy", "Nice to see you here", "Oh", "A productive moment", "Hi hi", "You're here,", "You came to work", "Focus time already?", "A new worker appeared ✨", "Ready to work"]
+GREETINGS = ["", "", "Hello", "Oh heyy", "Hi there", "Welcome", "Work mode activated", "Heyyy", "Nice to see you here", "Oh", "A productive moment", "Hi hi", "You're here,", "You came to work", "Focus time already", "A new worker appeared", "Ready to work"]
 
-MSG_SPACE = [" ", " ", ", ", "! ", "!", ". "]
+MSG_SPACE = [", ", "! ", "! ", ". ", ".. ", "- "]
 
 ASK_TO_JOIN = [
-    "Want some company?",
+    "Want some company? 🥺",
     "Can we work together? 🥺",
-    "Wanna work together?",
+    "Wanna work together? 🥺",
     "I'm free to join the VC if you'd like company! ✨",
     "Would you like to work together?",
     "Can I jump in with you?\nTotally okay if you're in the zone! 🎧",
@@ -50,7 +50,7 @@ ASK_TO_JOIN = [
     "Should I pop in?\nI'm happy to just hang out if it helps! 👋",
     "Want to work together?\nI'm around if you want me to join!",
     "Do you want me to hop in the voice chat?",
-    "Should I join you in there?",
+    "Should I join you in there? 🥺",
     "Want to study together? I can join!",
     "Do you want me to jump in the VC with you?"
 ]
