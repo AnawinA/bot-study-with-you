@@ -118,6 +118,10 @@ def get_random_message(list_a, list_b, use_msg_space=False, opt_a=False, opt_b=F
     sep = random.choice(MSG_SPACE) if use_msg_space else " "
     return f"{a}{sep}{b}"
 
+def get_random_gif():
+    gifs = [g for g in ["reading.gif", "coding.gif"] if os.path.exists(g)]
+    return random.choice(gifs) if gifs else None
+
 
 # Bot Configuration
 intents = discord.Intents.default()
@@ -140,6 +144,9 @@ async def on_message(message):
         msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
         msg += f"\n{ASK_TO_JOIN_HIDDEN}"
         await message.channel.send(msg)
+        gif = get_random_gif()
+        if gif:
+            await message.channel.send(file=discord.File(gif))
         return
         
     await bot.process_commands(message)
@@ -169,6 +176,9 @@ async def on_voice_state_update(member, before, after):
                     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
                     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
                     await channel.send(msg)
+                    gif = get_random_gif()
+                    if gif:
+                        await channel.send(file=discord.File(gif))
 
     # Someone left a voice channel
     if before.channel:
@@ -191,7 +201,7 @@ async def studywithme(ctx):
         voice_channel = ctx.author.voice.channel
         vc = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         
-        gif_file = "reading.gif" if os.path.exists("reading.gif") else None
+        gif_file = get_random_gif()
 
         if vc and vc.is_connected():
             if vc.channel.id == voice_channel.id:
@@ -238,6 +248,9 @@ async def greet(ctx):
     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
     await ctx.send(msg)
+    gif = get_random_gif()
+    if gif:
+        await ctx.send(file=discord.File(gif))
 
 @bot.command()
 async def join(ctx):
