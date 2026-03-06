@@ -143,7 +143,7 @@ async def on_message(message):
     if message.content.lower().strip() == "hito":
         msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
         msg += f"\n{ASK_TO_JOIN_HIDDEN}"
-        await message.channel.send(msg)
+        await message.channel.send(msg, delete_after=10)
         return
         
     await bot.process_commands(message)
@@ -207,7 +207,7 @@ async def studywithme(ctx):
                 except Exception as e:
                     response = f"I tried to move to you, but something went wrong: {e} 😅"
             response += f"\n{JOINED_HIDDEN}"
-            await ctx.send(response)
+            await ctx.send(response, delete_after=10)
         else:
             try:
                 # Check permissions
@@ -219,7 +219,7 @@ async def studywithme(ctx):
                 await voice_channel.connect(timeout=20, reconnect=True, self_deaf=True, self_mute=True)
                 response = get_random_message(JOINED_A_OPTIONAL, JOINED_B, use_msg_space=False, opt_a=True)
                 response += f"\n{JOINED_HIDDEN}"
-                await ctx.send(response)
+                await ctx.send(response, delete_after=10)
             except Exception as e:
                 await ctx.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' and 'davey' installed! 😅")
                 return
@@ -242,7 +242,7 @@ async def ping(ctx):
 async def greet(ctx):
     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
     msg += f"\n{ASK_TO_JOIN_HIDDEN}"
-    await ctx.send(msg)
+    await ctx.send(msg, delete_after=10)
 
 @bot.command()
 async def join(ctx):
