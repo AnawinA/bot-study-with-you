@@ -129,6 +129,7 @@ intents.members = True
 # Prefix is 'hito ' (case insensitive)
 bot = commands.Bot(command_prefix=["hito ", "Hito "], intents=intents, case_insensitive=True)
 
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
