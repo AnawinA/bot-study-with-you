@@ -137,8 +137,11 @@ async def on_message(message):
     # If the message is just 'hito' (case insensitive), send a greeting
     if message.content.lower().strip() == "hito":
         msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
-        msg += f"\n{ASK_TO_JOIN_HIDDEN}"
         await message.channel.send(msg)
+        try:
+            await message.author.send(ASK_TO_JOIN_HIDDEN)
+        except discord.Forbidden:
+            pass # Ignore if the user has DMs disabled
         return
         
     await bot.process_commands(message)
@@ -166,8 +169,11 @@ async def on_voice_state_update(member, before, after):
                 channel = bot.get_channel(WORK_CHANNEL_ID)
                 if channel:
                     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
-                    msg += f"\n{ASK_TO_JOIN_HIDDEN}"
                     await channel.send(msg)
+                    try:
+                        await member.send(ASK_TO_JOIN_HIDDEN)
+                    except discord.Forbidden:
+                        pass
 
     # Someone left a voice channel
     if before.channel:
@@ -195,15 +201,17 @@ async def studywithme(ctx):
         if vc and vc.is_connected():
             if vc.channel.id == voice_channel.id:
                 response = get_random_message(READY_ALREADY_JOINED_A, READY_ALREADY_JOINED_B_OPTIONAL, use_msg_space=True, opt_b=True)
-                response += f"\n{JOINED_HIDDEN}"
             else:
                 response = get_random_message(JOINED_A_OPTIONAL, JOINED_B, use_msg_space=False, opt_a=True)
-                response += f"\n{JOINED_HIDDEN}"
                 try:
                     await vc.move_to(voice_channel)
                 except Exception as e:
                     response = f"I tried to move to you, but something went wrong: {e} 😅"
             await ctx.send(response)
+            try:
+                await ctx.author.send(JOINED_HIDDEN)
+            except discord.Forbidden:
+                pass
         else:
             try:
                 # Check permissions
@@ -214,8 +222,11 @@ async def studywithme(ctx):
 
                 await voice_channel.connect(timeout=20, reconnect=True, self_deaf=True, self_mute=True)
                 response = get_random_message(JOINED_A_OPTIONAL, JOINED_B, use_msg_space=False, opt_a=True)
-                response += f"\n{JOINED_HIDDEN}"
                 await ctx.send(response)
+                try:
+                    await ctx.author.send(JOINED_HIDDEN)
+                except discord.Forbidden:
+                    pass
             except Exception as e:
                 await ctx.send(f"I tried to join, but I ran into an error: `{e}`. Make sure I have 'PyNaCl' and 'davey' installed! 😅")
                 return
@@ -236,8 +247,11 @@ async def ping(ctx):
 @bot.command(name="greet")
 async def greet(ctx):
     msg = get_random_message(GREETINGS, ASK_TO_JOIN, use_msg_space=True)
-    msg += f"\n{ASK_TO_JOIN_HIDDEN}"
     await ctx.send(msg)
+    try:
+        await ctx.author.send(ASK_TO_JOIN_HIDDEN)
+    except discord.Forbidden:
+        pass
 
 @bot.command()
 async def join(ctx):
