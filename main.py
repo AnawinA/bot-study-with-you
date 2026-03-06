@@ -34,9 +34,9 @@ except (TypeError, ValueError):
 
 
 # Message data
-GREETINGS = ["", "", "Hello!", "Oh heyy!", "Hi there!", "Welcome!", "Work mode activated 🔥", "Heyyy,", "Nice to see you here,", "Oh,", "A productive moment!", "Hi hi!", "You're here,", "You came to work!", "Focus time already?", "A new worker appeared ✨", "Ready to work"]
+GREETINGS = ["", "", "Hello", "Oh heyy", "Hi there", "Welcome", "Work mode activated", "Heyyy", "Nice to see you here", "Oh", "A productive moment", "Hi hi", "You're here,", "You came to work", "Focus time already?", "A new worker appeared ✨", "Ready to work"]
 
-MSG_SPACE = [" ", " ", ", ", "! ", "!", "- ", ". "]
+MSG_SPACE = [" ", " ", ", ", "! ", "!", ". "]
 
 ASK_TO_JOIN = [
     "Want some company?",
