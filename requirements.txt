@@ -1,4 +1,4 @@
 discord.py
 PyNaCl
-Flask
 davey
+python-dotenv

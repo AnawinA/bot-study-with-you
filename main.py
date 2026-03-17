@@ -1,25 +1,12 @@
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 import random
 import asyncio
 import discord
 from discord.ext import commands
-from flask import Flask
-from threading import Thread
-
-# Flask server to keep the bot alive
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "I am alive!"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    t = Thread(target=run_flask)
-    t.start()
-
 # Configuration
 TOKEN = os.getenv("DISCORD_TOKEN")
 try:
@@ -117,7 +104,6 @@ def get_random_message(list_a, list_b, use_msg_space=False, opt_a=False, opt_b=F
     
     sep = random.choice(MSG_SPACE) if use_msg_space else " "
     return f"{a}{sep}{b}"
-
 def get_random_gif():
     gifs = [g for g in ["reading.gif", "coding.gif"] if os.path.exists(g)]
     return random.choice(gifs) if gifs else None
@@ -131,7 +117,13 @@ intents.guilds = True
 intents.members = True
 
 # Prefix is 'hito ' (case insensitive)
-bot = commands.Bot(command_prefix=["hito ", "Hito "], intents=intents, case_insensitive=True)
+bot = commands.Bot(
+    command_prefix=["hito ", "Hito "], 
+    intents=intents, 
+    case_insensitive=True,
+    chunk_guilds_at_startup=False,
+    member_cache_flags=discord.MemberCacheFlags(voice=True)
+)
 
 
 @bot.event
@@ -265,7 +257,4 @@ async def whatru(ctx):
     await ctx.send(msg)
 
 if __name__ == "__main__":
-    keep_alive()
     bot.run(TOKEN)
-
-
