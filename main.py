@@ -1,24 +1,19 @@
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 import random
 import asyncio
 import discord
+from dotenv import load_dotenv
 from discord.ext import commands
+
+# Load environment variables from .env file
+load_dotenv()
+
 # Configuration
 TOKEN = os.getenv("DISCORD_TOKEN")
-try:
-    WORK_VOICE_CHANNEL_ID = int(os.getenv('WORK_VOICE_CHANNEL', 0))
-    WORK_CHANNEL_ID = int(os.getenv('WORK_CHANNEL', 0))
-    CATEGORY_ID = os.getenv('CATEGORY_ID')
-except (TypeError, ValueError):
-    print("Error: WORK_VOICE_CHANNEL or WORK_CHANNEL not set correctly in .env")
-    WORK_VOICE_CHANNEL_ID = 0
-    WORK_CHANNEL_ID = 0
 
-
+WORK_VOICE_CHANNEL_ID = 1478998139825295501
+WORK_CHANNEL_ID = 1457326281011105893
+CATEGORY_ID = 1457301344548290656
 
 # Message data
 GREETINGS = ["", "", "Hello", "Oh heyy", "Hi there", "Welcome", "Work mode activated", "Heyyy", "Nice to see you here", "Oh", "A productive moment", "Hi hi", "You're here,", "You came to work", "Focus time already", "A new worker appeared", "Ready to work"]
